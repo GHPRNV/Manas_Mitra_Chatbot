@@ -10,18 +10,14 @@
           "type": "string",
           "description": "Unique identifier for the User entity."
         },
-        "username": {
+        "displayName": {
           "type": "string",
-          "description": "The user's chosen username."
+          "description": "The user's chosen display name."
         },
         "email": {
           "type": "string",
           "description": "The user's email address.",
           "format": "email"
-        },
-        "phoneNumber": {
-          "type": "string",
-          "description": "The user's phone number, used for OTP verification."
         },
         "registrationDate": {
           "type": "string",
@@ -31,15 +27,16 @@
       },
       "required": [
         "id",
-        "phoneNumber",
+        "email",
         "registrationDate"
       ]
     }
   },
   "auth": {
     "providers": [
-      "phone",
-      "anonymous"
+      "anonymous",
+      "google.com",
+      "password"
     ]
   },
   "firestore": {

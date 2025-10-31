@@ -10,8 +10,11 @@ export function WelcomeHeader() {
         if (user.isAnonymous) {
             return 'Welcome, Anonymous User';
         }
-        if(user.phoneNumber) {
-            return `Welcome back, ${user.phoneNumber}`;
+        if (user.displayName) {
+            return `Welcome back, ${user.displayName}`;
+        }
+        if(user.email) {
+            return `Welcome back, ${user.email}`;
         }
         return 'Welcome back';
     }

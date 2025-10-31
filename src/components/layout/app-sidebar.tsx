@@ -45,9 +45,23 @@ export function AppSidebar() {
   const handleLogout = async () => {
     if (auth) {
         await auth.signOut();
-        router.push('/');
+        router.push('/login');
     }
   };
+
+  const getUserInitial = () => {
+    if (!user) return 'G';
+    if (user.isAnonymous) return 'A';
+    if (user.displayName) return user.displayName.charAt(0).toUpperCase();
+    if (user.email) return user.email.charAt(0).toUpperCase();
+    return 'U';
+  }
+
+  const getUserName = () => {
+    if (!user) return 'Guest';
+    if (user.isAnonymous) return 'Anonymous User';
+    return user.displayName || user.email || 'User';
+  }
 
   return (
     <Sidebar>
@@ -96,10 +110,10 @@ export function AppSidebar() {
                     src={user.photoURL || userAvatar?.imageUrl}
                     data-ai-hint={userAvatar?.imageHint}
                 />
-                <AvatarFallback>{user.isAnonymous ? 'A' : (user.phoneNumber ? user.phoneNumber.slice(0, 2) : 'U')}</AvatarFallback>
+                <AvatarFallback>{getUserInitial()}</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col overflow-hidden">
-                <span className="text-sm font-semibold truncate">{user.isAnonymous ? "Anonymous User" : (user.phoneNumber || "User")}</span>
+                <span className="text-sm font-semibold truncate">{getUserName()}</span>
                 </div>
             </div>
             <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout">
