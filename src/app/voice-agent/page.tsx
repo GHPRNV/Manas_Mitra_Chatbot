@@ -21,57 +21,10 @@ export default function VoiceAgentPage() {
   const audioPlayer = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
 
-  // Initialize SpeechRecognition
+  // Create a hidden audio element for playback on component mount
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recognitionInstance = new SpeechRecognition();
-      recognitionInstance.continuous = false;
-      recognitionInstance.interimResults = true; // Enable interim results
-      recognitionInstance.lang = 'en-US';
-
-      recognitionInstance.onresult = (event: any) => {
-        let finalTranscript = '';
-        let interim = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript;
-          } else {
-            interim += event.results[i][0].transcript;
-          }
-        }
-        setInterimTranscript(interim);
-
-        if (finalTranscript) {
-          handleNewMessage(finalTranscript, 'user');
-        }
-      };
-
-      recognitionInstance.onerror = (event: any) => {
-        if (event.error !== 'no-speech' && event.error !== 'aborted') {
-          console.error('Speech recognition error:', event.error);
-           toast({
-            variant: 'destructive',
-            title: 'Speech Recognition Error',
-            description: `There was a problem with the speech service (${event.error}). Please check your connection and try again.`,
-          });
-        }
-        setIsRecording(false);
-        setInterimTranscript('');
-      };
-
-      recognitionInstance.onend = () => {
-        setIsRecording(false);
-      };
-      
-      recognition.current = recognitionInstance;
-    } else {
-      console.warn('Speech Recognition not supported in this browser.');
-    }
-
-    // Create a hidden audio element for playback
     audioPlayer.current = new Audio();
-  }, [toast]);
+  }, []);
 
   const handleNewMessage = async (text: string, role: 'user' | 'model') => {
     if (!text.trim()) return;
@@ -103,39 +56,95 @@ export default function VoiceAgentPage() {
 
       } catch (error) {
         console.error('Error with AI agent:', error);
-        setConversation(prev => [...prev, { role: 'model', content: "I'm having a little trouble speaking right now. Please try again in a moment." }]);
+        toast({
+            variant: 'destructive',
+            title: 'AI Agent Error',
+            description: "I'm having a little trouble thinking right now. Please try again in a moment.",
+        });
+        setConversation(prev => [...prev.slice(0, -1)]); // Remove the user message if AI fails
       }
     }
     setIsLoading(false);
   };
-
-
-  const toggleRecording = async () => {
-    if (!recognition.current) {
+  
+  const setupSpeechRecognition = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
       toast({
         variant: 'destructive',
         title: 'Unsupported Browser',
         description: "Sorry, your browser doesn't support the voice agent.",
       });
+      return false;
+    }
+
+    const recognitionInstance = new SpeechRecognition();
+    recognitionInstance.continuous = false;
+    recognitionInstance.interimResults = true;
+    recognitionInstance.lang = 'en-US';
+
+    recognitionInstance.onresult = (event: any) => {
+      let finalTranscript = '';
+      let interim = '';
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else {
+          interim += event.results[i][0].transcript;
+        }
+      }
+      setInterimTranscript(interim);
+
+      if (finalTranscript) {
+        handleNewMessage(finalTranscript, 'user');
+      }
+    };
+
+    recognitionInstance.onerror = (event: any) => {
+      if (event.error !== 'no-speech' && event.error !== 'aborted') {
+        console.error('Speech recognition error:', event.error);
+        toast({
+          variant: 'destructive',
+          title: 'Speech Recognition Error',
+          description: `There was a problem with the speech service (${event.error}). Please check your connection and try again.`,
+        });
+      }
+      setIsRecording(false);
+      setInterimTranscript('');
+    };
+
+    recognitionInstance.onend = () => {
+      setIsRecording(false);
+    };
+
+    recognition.current = recognitionInstance;
+    return true;
+  };
+
+
+  const toggleRecording = async () => {
+    if (isRecording) {
+      recognition.current?.stop();
+      setIsRecording(false);
       return;
     }
 
-    if (isRecording) {
-      recognition.current.stop();
-    } else {
-      try {
-        // Request microphone permission
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-        recognition.current.start();
-        setIsRecording(true);
-      } catch (err) {
-        console.error("Microphone access denied:", err);
-        toast({
-            variant: 'destructive',
-            title: 'Microphone Access Denied',
-            description: 'Microphone access is required. Please enable it in your browser settings.',
-        });
-      }
+    if (!setupSpeechRecognition()) {
+        return;
+    }
+
+    try {
+      // Request microphone permission
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      recognition.current.start();
+      setIsRecording(true);
+    } catch (err) {
+      console.error("Microphone access denied:", err);
+      toast({
+          variant: 'destructive',
+          title: 'Microphone Access Denied',
+          description: 'Microphone access is required. Please enable it in your browser settings.',
+      });
     }
   };
 
@@ -185,10 +194,10 @@ export default function VoiceAgentPage() {
                     </div>
                 </div>
              )}
-             {isRecording && interimTranscript && (
+             {isRecording && (
                  <div className="flex items-start gap-3 justify-end">
                     <div className="rounded-lg px-4 py-2 max-w-sm bg-primary/80 text-primary-foreground italic">
-                        {interimTranscript}
+                        {interimTranscript || "Listening..."}
                     </div>
                     <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center">
                         <User size={20}/>
