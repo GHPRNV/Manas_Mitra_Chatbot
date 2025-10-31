@@ -15,7 +15,6 @@ export default function VoiceAgentPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [conversation, setConversation] = useState<Message[]>([]);
-  const mediaRecorder = useRef<MediaRecorder | null>(null);
   const recognition = useRef<any>(null); // Using 'any' for SpeechRecognition for broader compatibility
   const audioPlayer = useRef<HTMLAudioElement | null>(null);
 
