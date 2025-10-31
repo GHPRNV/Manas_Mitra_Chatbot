@@ -10,7 +10,8 @@ import {
   SmilePlus,
   Sparkles,
   LogOut,
-  LogIn
+  LogIn,
+  User as UserIcon,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -26,6 +27,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useAuth, useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const menuItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -44,8 +53,8 @@ export function AppSidebar() {
 
   const handleLogout = async () => {
     if (auth) {
-        await auth.signOut();
-        router.push('/login');
+      await auth.signOut();
+      router.push('/login');
     }
   };
 
@@ -55,13 +64,13 @@ export function AppSidebar() {
     if (user.displayName) return user.displayName.charAt(0).toUpperCase();
     if (user.email) return user.email.charAt(0).toUpperCase();
     return 'U';
-  }
+  };
 
   const getUserName = () => {
     if (!user) return 'Guest';
     if (user.isAnonymous) return 'Anonymous User';
     return user.displayName || user.email || 'User';
-  }
+  };
 
   return (
     <Sidebar>
@@ -94,43 +103,61 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         {isUserLoading ? (
-            <div className="flex items-center gap-3 p-2">
-                <Avatar>
-                    <AvatarFallback>U</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col overflow-hidden">
-                    <span className="text-sm font-semibold truncate">Loading...</span>
-                </div>
+          <div className="flex items-center gap-3 p-2">
+            <Avatar>
+              <AvatarFallback>U</AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-sm font-semibold truncate">Loading...</span>
             </div>
-        ) : user ? (
-          <div className="flex items-center justify-between p-2 w-full">
-            <div className="flex items-center gap-3 overflow-hidden">
-                <Avatar>
-                <AvatarImage
-                    src={user.photoURL || userAvatar?.imageUrl}
-                    data-ai-hint={userAvatar?.imageHint}
-                />
-                <AvatarFallback>{getUserInitial()}</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col overflow-hidden">
-                <span className="text-sm font-semibold truncate">{getUserName()}</span>
-                </div>
-            </div>
-            <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout">
-              <LogOut className="h-5 w-5" />
-            </Button>
           </div>
+        ) : user ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="flex items-center justify-between p-2 w-full hover:bg-sidebar-accent rounded-md cursor-pointer transition-colors">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <Avatar>
+                    <AvatarImage
+                      src={user.photoURL || userAvatar?.imageUrl}
+                      data-ai-hint={userAvatar?.imageHint}
+                    />
+                    <AvatarFallback>{getUserInitial()}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col overflow-hidden text-left">
+                    <span className="text-sm font-semibold truncate">
+                      {getUserName()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 mb-2" side="top" align="start">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/profile">
+                  <UserIcon className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         ) : (
-            <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton asChild tooltip="Login">
-                        <Link href="/login">
-                            <LogIn/>
-                            <span>Login</span>
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-            </SidebarMenu>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild tooltip="Login">
+                <Link href="/login">
+                  <LogIn />
+                  <span>Login</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
         )}
       </SidebarFooter>
     </Sidebar>

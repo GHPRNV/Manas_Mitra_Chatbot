@@ -19,6 +19,10 @@
           "description": "The user's email address.",
           "format": "email"
         },
+        "phoneNumber": {
+          "type": "string",
+          "description": "The user's phone number."
+        },
         "registrationDate": {
           "type": "string",
           "description": "The date and time the user registered.",
@@ -27,7 +31,6 @@
       },
       "required": [
         "id",
-        "email",
         "registrationDate"
       ]
     }
