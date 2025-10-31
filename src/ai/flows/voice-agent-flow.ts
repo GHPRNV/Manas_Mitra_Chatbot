@@ -66,15 +66,11 @@ async function toWav(pcmData: Buffer): Promise<string> {
     });
 }
 
-
-const voiceAgentFlow = ai.defineFlow(
-    {
-      name: 'voiceAgentFlow',
-      inputSchema: ConversationInputSchema,
-      outputSchema: ConversationOutputSchema,
-    },
-    async (input) => {
-        const prompt = `You are ManasMitra, a caring and empathetic voice assistant designed to provide mental wellness support. Your goal is to listen to the user, validate their feelings, and gently guide them towards self-reflection and confidence.
+const voiceAgentPrompt = ai.definePrompt({
+    name: 'voiceAgentPrompt',
+    input: { schema: ConversationInputSchema },
+    output: { schema: ConversationOutputSchema },
+    prompt: `You are ManasMitra, a caring and empathetic voice assistant designed to provide mental wellness support. Your goal is to listen to the user, validate their feelings, and gently guide them towards self-reflection and confidence.
 
 - **Listen Deeply:** Pay close attention to the user's words and the underlying emotions.
 - **Be Empathetic:** Start by acknowledging their feelings (e.g., "It sounds like you're going through a lot," "I hear how difficult that must be.").
@@ -90,17 +86,17 @@ Conversation History:
 
 User's current input: "{{currentInput}}"
 
-Your response:`;
+Your response:`
+});
 
-        const { output } = await ai.generate({
-            prompt: prompt,
-            model: 'googleai/gemini-pro',
-            input: input,
-            output: {
-                schema: ConversationOutputSchema,
-            },
-        });
-
+const voiceAgentFlow = ai.defineFlow(
+    {
+      name: 'voiceAgentFlow',
+      inputSchema: ConversationInputSchema,
+      outputSchema: ConversationOutputSchema,
+    },
+    async (input) => {
+        const { output } = await voiceAgentPrompt(input);
         return output!;
     }
 );
