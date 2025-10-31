@@ -175,7 +175,7 @@ export function ChooseYourFeelingsGame() {
         </motion.div>
       </CardContent>
        <CardFooter>
-            <p className="text-xs text-muted-foreground">Step {userChoices.length + 1} of {story.length -1}</p>
+            <p className="text-xs text-muted-foreground">Step {userChoices.length + 1} of 2</p>
         </CardFooter>
     </Card>
   );
