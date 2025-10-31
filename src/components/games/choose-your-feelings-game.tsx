@@ -75,11 +75,9 @@ export function ChooseYourFeelingsGame() {
   const [analysis, setAnalysis] = useState<AnalysisResponse>(null);
   const [isPending, startTransition] = useTransition();
 
-  const currentScenario = story.find((s) => s.id === currentScenarioId);
-
   const handleChoice = (option: { text: string; nextId: number }) => {
     const choice: Choice = {
-      scenario: currentScenario!.scenario,
+      scenario: story.find(s => s.id === currentScenarioId)!.scenario,
       choice: option.text,
     };
     const newChoices = [...userChoices, choice];
@@ -102,11 +100,7 @@ export function ChooseYourFeelingsGame() {
       setAnalysis(null);
   }
 
-  if (!currentScenario) {
-    return <Card><CardContent>Loading story...</CardContent></Card>;
-  }
-
-  if (currentScenario.id === END_NODE) {
+  if (currentScenarioId === END_NODE) {
     return (
       <Card>
         <CardHeader>
@@ -137,6 +131,13 @@ export function ChooseYourFeelingsGame() {
         </CardFooter>
       </Card>
     );
+  }
+
+  const currentScenario = story.find((s) => s.id === currentScenarioId);
+
+  if (!currentScenario) {
+    // This should not be reached with the new logic, but serves as a fallback.
+    return <Card><CardContent>Loading story...</CardContent></Card>;
   }
 
 
