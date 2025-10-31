@@ -7,11 +7,9 @@
  *
  * Data Structure:
  * - /users/{userId}: Stores user profile information.
- * - /users/{userId}/otps/{otpId}: Stores OTPs for user verification.
  *
  * Key Security Decisions:
  * - Users can only access their own user document.
- * - Users can only access their own OTP documents.
  * - No user listing is allowed (to prevent email/phone number harvesting).
  * - The data model relies on path-based ownership. The UID of the authenticated
  *   user must always match the {userId} path segment when accessing data
@@ -70,42 +68,7 @@ service cloud.firestore {
      * @principle Enforces document ownership for all operations.
      */
     match /users/{userId} {
-      allow get: if isOwner(userId);
-      allow list: if false; // No user listing allowed.
-
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id; // Enforce immutability of user ID.
-
-      allow delete: if isExistingOwner(userId);
-    }
-
-    /**
-     * @description
-     *  - Protects OTPs under /users/{userId}/otps/{otpId}.
-     *  - Enforces that only the authenticated user can read or write their own OTPs.
-     * @path /users/{userId}/otps/{otpId}
-     * @allow (get) User 'user_abc' can read their own OTP data.
-     *  request.auth.uid: 'user_abc'
-     * @allow (create) User 'user_abc' can create their own OTP data.
-     *  request.auth.uid: 'user_abc'
-     *  request.resource.data.userId: 'user_abc'
-     * @deny (get) User 'user_xyz' cannot read User 'user_abc' OTP data.
-     *  request.auth.uid: 'user_xyz'
-     * @deny (create) User 'user_abc' cannot create an OTP for User 'user_xyz'.
-     *  request.auth.uid: 'user_abc'
-     *  request.resource.data.userId: 'user_xyz'
-     * @principle Enforces document ownership for all operations.
-     */
-    match /users/{userId}/otps/{otpId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-
-      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId; // Enforce immutability of userId.
-
-      allow delete: if isExistingOwner(userId);
+      allow read, write: if isOwner(userId);
     }
   }
 }

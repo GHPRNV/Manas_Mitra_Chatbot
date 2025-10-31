@@ -34,42 +34,6 @@
         "phoneNumber",
         "registrationDate"
       ]
-    },
-    "OTP": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "OTP",
-      "type": "object",
-      "description": "Represents a One-Time Password (OTP) for user verification.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the OTP entry."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N OTP).  The user this OTP is associated with."
-        },
-        "otp": {
-          "type": "string",
-          "description": "The One-Time Password."
-        },
-        "expirationTime": {
-          "type": "string",
-          "description": "The date and time the OTP expires.",
-          "format": "date-time"
-        },
-        "isUsed": {
-          "type": "boolean",
-          "description": "Indicates whether the OTP has been used."
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "otp",
-        "expirationTime",
-        "isUsed"
-      ]
     }
   },
   "auth": {
@@ -79,44 +43,11 @@
     ]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores user profile information. Path-based ownership ensures only the user (or admin) can access their profile data.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            }
-          ]
-        }
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/backend/entities/User"
       },
-      {
-        "path": "/users/{userId}/otps/{otpId}",
-        "definition": {
-          "entityName": "OTP",
-          "schema": {
-            "$ref": "#/backend/entities/OTP"
-          },
-          "description": "Stores OTPs for user verification. Path-based ownership ensures only the user (or admin) can access their OTPs.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "otpId",
-              "description": "The unique identifier of the OTP."
-            }
-          ]
-        }
-      }
-    ],
-    "reasoning": "This Firestore data structure is designed for the ManasMitra application, prioritizing security, scalability, and ease of debugging, particularly regarding authorization. It uses path-based ownership for user-related data and avoids hierarchical authorization dependencies to ensure atomic operations.\n\n**Authorization Independence:** The structure avoids using `get()` calls in security rules by using path based rules and storing roles in the database and not custom claims.\n\n**Segregation and QAPs:** The structure facilitates secure `list` operations by ensuring that each collection has a homogeneous security posture, that is, all documents within a collection share the same access requirements.  This is achieved by segregating data based on ownership (e.g., `/users/{userId}/otps/{otpId}`).\n\nThe structure is optimized for the ManasMitra app's features, including user authentication with OTP verification, AI-powered mental wellness support, and anonymous support forums.  It enforces data clarity and consistency through explicit state modeling and semantic naming conventions."
+      "description": "Stores user profile information. Path-based ownership ensures only the user (or admin) can access their profile data."
+    }
   }
 }
