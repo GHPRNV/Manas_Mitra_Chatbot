@@ -150,6 +150,7 @@ export function CalmPulseGame() {
                         animate={ phase === 'inhale' ? { scale: 1 } : { scale: 0.5 }}
                         transition={{ duration: phase === 'inhale' ? INHALE_DURATION/1000 : EXHALE_DURATION/1000, ease: "easeInOut"}}
                     />
+                </motion.div>
                 </AnimatePresence>
                 <div className='absolute inset-0 flex flex-col items-center justify-center'>
                      <p className='text-xl font-bold text-primary-foreground select-none'>{phaseText}</p>
