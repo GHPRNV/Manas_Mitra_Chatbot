@@ -3,6 +3,7 @@
 import { StoryCompletionGame } from '@/components/games/story-completion-game';
 import { ChooseYourFeelingsGame } from '@/components/games/choose-your-feelings-game';
 import { CalmPulseGame } from '@/components/games/calm-pulse-game';
+import { FocusChallengeGame } from '@/components/games/focus-challenge-game';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function GamesPage() {
@@ -16,10 +17,11 @@ export default function GamesPage() {
       </div>
 
       <Tabs defaultValue="story-completion">
-        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 mx-auto max-w-2xl">
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-4 mx-auto max-w-3xl">
           <TabsTrigger value="story-completion">Story Completion</TabsTrigger>
           <TabsTrigger value="choose-your-feelings">Choose Your Feelings</TabsTrigger>
           <TabsTrigger value="calm-pulse">Calm Pulse</TabsTrigger>
+          <TabsTrigger value="focus-challenge">Focus Challenge</TabsTrigger>
         </TabsList>
         
         <div className="mt-8 flex justify-center">
@@ -32,6 +34,9 @@ export default function GamesPage() {
                 </TabsContent>
                 <TabsContent value="calm-pulse">
                     <CalmPulseGame />
+                </TabsContent>
+                <TabsContent value="focus-challenge">
+                    <FocusChallengeGame />
                 </TabsContent>
             </div>
         </div>
