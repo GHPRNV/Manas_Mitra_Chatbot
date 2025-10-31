@@ -60,7 +60,7 @@ export default function VoiceAgentPage() {
       try {
         // Get AI text response
         const aiResult = await voiceAgent({
-          history: conversation,
+          history: newConversation, // Use the updated conversation history
           currentInput: text,
         });
 
