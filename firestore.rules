@@ -1,0 +1,111 @@
+/**
+ * @fileoverview Firestore Security Rules for ManasMitra application.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model.  Users can only
+ * read and write their own data.  There are no global admin roles.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores user profile information.
+ * - /users/{userId}/otps/{otpId}: Stores OTPs for user verification.
+ *
+ * Key Security Decisions:
+ * - Users can only access their own user document.
+ * - Users can only access their own OTP documents.
+ * - No user listing is allowed (to prevent email/phone number harvesting).
+ * - The data model relies on path-based ownership. The UID of the authenticated
+ *   user must always match the {userId} path segment when accessing data
+ *   under /users/{userId}.
+ *
+ * Denormalization for Authorization:
+ * The data structure utilizes path-based authorization (e.g., /users/{userId})
+ * to avoid costly `get()` calls within the security rules. The `userId` is
+ * embedded in the path, allowing for simple validation against `request.auth.uid`.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Checks if the user is signed in.
+     * @return {boolean} True if the user is signed in, false otherwise.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the user is the owner of the resource.
+     * @param {string} userId The user ID to check against.
+     * @return {boolean} True if the user is the owner, false otherwise.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if the user is the owner of the resource and the resource exists.
+     * @param {string} userId The user ID to check against.
+     * @return {boolean} True if the user is the owner and the resource exists, false otherwise.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description
+     *  - Protects user profiles under /users/{userId}.
+     *  - Enforces that only the authenticated user can read or write their own profile.
+     * @path /users/{userId}
+     * @allow (get) User 'user_abc' can read their own profile data.
+     *  request.auth.uid: 'user_abc'
+     * @allow (create) User 'user_abc' can create their own profile data.
+     *  request.auth.uid: 'user_abc'
+     *  request.resource.data.id: 'user_abc'
+     * @deny (get) User 'user_xyz' cannot read User 'user_abc' profile data.
+     *  request.auth.uid: 'user_xyz'
+     * @deny (create) User 'user_abc' cannot create a profile for User 'user_xyz'.
+     *  request.auth.uid: 'user_abc'
+     *  request.resource.data.id: 'user_xyz'
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false; // No user listing allowed.
+
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id; // Enforce immutability of user ID.
+
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description
+     *  - Protects OTPs under /users/{userId}/otps/{otpId}.
+     *  - Enforces that only the authenticated user can read or write their own OTPs.
+     * @path /users/{userId}/otps/{otpId}
+     * @allow (get) User 'user_abc' can read their own OTP data.
+     *  request.auth.uid: 'user_abc'
+     * @allow (create) User 'user_abc' can create their own OTP data.
+     *  request.auth.uid: 'user_abc'
+     *  request.resource.data.userId: 'user_abc'
+     * @deny (get) User 'user_xyz' cannot read User 'user_abc' OTP data.
+     *  request.auth.uid: 'user_xyz'
+     * @deny (create) User 'user_abc' cannot create an OTP for User 'user_xyz'.
+     *  request.auth.uid: 'user_abc'
+     *  request.resource.data.userId: 'user_xyz'
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId}/otps/{otpId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId; // Enforce immutability of userId.
+
+      allow delete: if isExistingOwner(userId);
+    }
+  }
+}
