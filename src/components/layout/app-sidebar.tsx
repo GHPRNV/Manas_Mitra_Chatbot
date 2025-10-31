@@ -96,10 +96,10 @@ export function AppSidebar() {
                     src={user.photoURL || userAvatar?.imageUrl}
                     data-ai-hint={userAvatar?.imageHint}
                 />
-                <AvatarFallback>{user.phoneNumber ? user.phoneNumber.slice(0, 2) : 'U'}</AvatarFallback>
+                <AvatarFallback>{user.isAnonymous ? 'A' : (user.phoneNumber ? user.phoneNumber.slice(0, 2) : 'U')}</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col overflow-hidden">
-                <span className="text-sm font-semibold truncate">{user.phoneNumber || "Anonymous User"}</span>
+                <span className="text-sm font-semibold truncate">{user.isAnonymous ? "Anonymous User" : (user.phoneNumber || "User")}</span>
                 </div>
             </div>
             <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout">

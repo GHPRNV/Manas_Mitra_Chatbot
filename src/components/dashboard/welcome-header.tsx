@@ -7,6 +7,9 @@ export function WelcomeHeader() {
 
   const getGreeting = () => {
     if (user) {
+        if (user.isAnonymous) {
+            return 'Welcome, Anonymous User';
+        }
         if(user.phoneNumber) {
             return `Welcome back, ${user.phoneNumber}`;
         }
