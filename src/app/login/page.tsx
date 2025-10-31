@@ -134,7 +134,8 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/');
-    } catch (err: any) {
+    } catch (err: any)
+      {
       console.error(err);
       setError(err.message || 'Failed to sign in.');
     } finally {
@@ -183,10 +184,10 @@ export default function LoginPage() {
           setError('You have requested too many OTPs. Please try again later.');
           break;
         case 'auth/operation-not-allowed':
-           setError('Phone number sign-in is not enabled for this app. Please contact support.');
+           setError('Phone number sign-in is not enabled for this app. Please enable it in the Firebase console.');
            break;
         case 'auth/billing-not-enabled':
-           setError('Phone number sign-in requires a billing account. Please contact support.');
+           setError('Phone number sign-in requires a billing account. Please upgrade your Firebase project to a paid plan.');
            break;
         default:
           setError(err.message || 'Failed to send OTP. Please check the phone number and try again.');
