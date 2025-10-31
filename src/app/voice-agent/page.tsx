@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Mic, MicOff, Loader2, Volume2, User, Bot } from 'lucide-react';
-import { textToSpeech, voiceAgent } from '@/lib/actions';
+import { voiceAgent, textToSpeech } from '@/lib/actions';
 
 interface Message {
   role: 'user' | 'model';
@@ -15,6 +15,7 @@ export default function VoiceAgentPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [conversation, setConversation] = useState<Message[]>([]);
+  const [interimTranscript, setInterimTranscript] = useState('');
   const recognition = useRef<any>(null); // Using 'any' for SpeechRecognition for broader compatibility
   const audioPlayer = useRef<HTMLAudioElement | null>(null);
 
@@ -24,19 +25,32 @@ export default function VoiceAgentPage() {
     if (SpeechRecognition) {
       const recognitionInstance = new SpeechRecognition();
       recognitionInstance.continuous = false;
-      recognitionInstance.interimResults = false;
+      recognitionInstance.interimResults = true; // Enable interim results
       recognitionInstance.lang = 'en-US';
 
       recognitionInstance.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        handleNewMessage(transcript, 'user');
+        let finalTranscript = '';
+        let interim = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          } else {
+            interim += event.results[i][0].transcript;
+          }
+        }
+        setInterimTranscript(interim);
+
+        if (finalTranscript) {
+          handleNewMessage(finalTranscript, 'user');
+        }
       };
 
       recognitionInstance.onerror = (event: any) => {
-        if (event.error !== 'no-speech') {
+        if (event.error !== 'no-speech' && event.error !== 'aborted') {
           console.error('Speech recognition error:', event.error);
         }
         setIsRecording(false);
+        setInterimTranscript('');
       };
 
       recognitionInstance.onend = () => {
@@ -53,7 +67,10 @@ export default function VoiceAgentPage() {
   }, []);
 
   const handleNewMessage = async (text: string, role: 'user' | 'model') => {
+    if (!text.trim()) return;
+    
     setIsLoading(true);
+    setInterimTranscript('');
     const newConversation = [...conversation, { role, content: text }];
     setConversation(newConversation);
 
@@ -94,7 +111,6 @@ export default function VoiceAgentPage() {
 
     if (isRecording) {
       recognition.current.stop();
-      setIsRecording(false);
     } else {
       try {
         // Request microphone permission
@@ -120,7 +136,7 @@ export default function VoiceAgentPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4 h-96 overflow-y-auto p-4 rounded-lg border bg-muted/50">
-            {conversation.length === 0 && (
+            {conversation.length === 0 && !isRecording && (
                 <div className="flex flex-col h-full items-center justify-center text-center text-muted-foreground">
                     <Volume2 className="w-16 h-16 mb-4"/>
                     <p className="font-semibold">Your conversation will appear here.</p>
@@ -154,14 +170,24 @@ export default function VoiceAgentPage() {
                     </div>
                 </div>
              )}
+             {isRecording && interimTranscript && (
+                 <div className="flex items-start gap-3 justify-end">
+                    <div className="rounded-lg px-4 py-2 max-w-sm bg-primary/80 text-primary-foreground italic">
+                        {interimTranscript}
+                    </div>
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center">
+                        <User size={20}/>
+                    </div>
+                 </div>
+             )}
           </div>
         </CardContent>
         <CardFooter className="flex flex-col items-center gap-4">
             <Button onClick={toggleRecording} size="lg" className="rounded-full w-20 h-20" disabled={isLoading}>
                 {isRecording ? <MicOff size={40} /> : <Mic size={40} />}
             </Button>
-            <p className="text-sm text-muted-foreground">
-                {isRecording ? "Listening..." : "Tap the mic to talk"}
+            <p className="text-sm text-muted-foreground h-4">
+                {isRecording ? "Listening..." : (isLoading ? "Thinking..." : "Tap the mic to talk")}
             </p>
         </CardFooter>
       </Card>
