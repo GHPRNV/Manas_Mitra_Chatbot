@@ -29,7 +29,7 @@ import { Loader2 } from 'lucide-react';
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('+');
+  const [phoneNumber, setPhoneNumber] = useState('+91');
   const [otp, setOtp] = useState('');
   const [phoneStep, setPhoneStep] = useState(1); // 1 for phone number, 2 for OTP
   const [confirmationResult, setConfirmationResult] =
@@ -151,6 +151,12 @@ export default function LoginPage() {
         setIsLoading(false);
         return;
     }
+    
+    if (!phoneNumber.startsWith('+91')) {
+        setError("Phone number must be for India (start with +91).");
+        setIsLoading(false);
+        return;
+    }
 
     try {
       const appVerifier = recaptchaVerifier.current;
@@ -171,7 +177,7 @@ export default function LoginPage() {
           setError('Please enter a phone number.');
           break;
         case 'auth/invalid-phone-number':
-          setError('The phone number is not valid. Please include the country code (e.g., +1).');
+          setError('The phone number is not valid. Please include the country code (e.g., +91).');
           break;
         case 'auth/too-many-requests':
           setError('You have requested too many OTPs. Please try again later.');
@@ -317,16 +323,19 @@ export default function LoginPage() {
                     <form onSubmit={handleSendOtp}>
                         <div className="grid gap-4 py-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="phone">Phone Number</Label>
+                                <Label htmlFor="phone">Phone Number (India only)</Label>
                                 <Input
                                     id="phone"
                                     name="phone"
                                     type="tel"
-                                    placeholder="+11234567890"
+                                    placeholder="+919876543210"
                                     required
                                     value={phoneNumber}
                                     onChange={(e) => setPhoneNumber(e.target.value)}
                                 />
+                                <p className="text-xs text-muted-foreground">
+                                    Please enter a valid 10-digit Indian mobile number.
+                                </p>
                             </div>
                             <Button type="submit" disabled={isLoading} className="w-full">
                                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
