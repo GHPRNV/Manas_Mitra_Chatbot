@@ -15,6 +15,11 @@ import {
   analyzeStory,
   type AnalyzeStoryInput 
 } from '@/ai/flows/story-analysis-flow';
+import {
+  analyzeChoices,
+  type AnalyzeChoicesInput,
+  type AnalyzeChoicesOutput,
+} from '@/ai/flows/choice-analysis-flow';
 
 
 export async function getAffirmation(input: GenerateAffirmationInput) {
@@ -63,4 +68,17 @@ export async function getStoryAnalysis(input: AnalyzeStoryInput) {
       identifiedFeeling: "Creative"
     };
   }
+}
+
+export async function getChoiceAnalysis(input: AnalyzeChoicesInput): Promise<AnalyzeChoicesOutput> {
+    try {
+        const analysis = await analyzeChoices(input);
+        return analysis;
+    } catch (error) {
+        console.error("Failed to get choice analysis:", error);
+        return {
+            tendency: "Reflective",
+            analysis: "You took a moment to think through your choices. This shows a thoughtful and reflective approach to situations."
+        };
+    }
 }

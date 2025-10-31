@@ -1,4 +1,5 @@
 import { StoryCompletionGame } from '@/components/games/story-completion-game';
+import { ChooseYourFeelingsGame } from '@/components/games/choose-your-feelings-game';
 
 export default function GamesPage() {
   return (
@@ -10,9 +11,9 @@ export default function GamesPage() {
         </p>
       </div>
 
-      <div className="grid gap-8">
+      <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
         <StoryCompletionGame />
-        {/* You can add more game components here in the future */}
+        <ChooseYourFeelingsGame />
       </div>
     </div>
   );
