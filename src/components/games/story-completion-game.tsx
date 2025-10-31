@@ -1,16 +1,17 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Sparkles, Lightbulb } from 'lucide-react';
 import { getStoryAnalysis } from '@/lib/actions';
+import { Skeleton } from '../ui/skeleton';
 
 const storyPrompts = [
   "The small boat drifted on a sea of stars. In the distance, a single lighthouse blinked. As the boat got closer, the light wasn't from a lamp, but from...",
   "Deep within the quiet library, I found a book with blank pages. As I touched the first page, words began to appear, telling a story only I could read. It started with...",
-  'The old robot sat alone in the junkyard, watching the world go by. One day, a small bird landed on its shoulder and chirped a strange tune. The robot began to...',
+  'The old robot sat alone in the junkyyerd, watching the world go by. One day, a small bird landed on its shoulder and chirped a strange tune. The robot began to...',
 ];
 
 type AnalysisResponse = {
@@ -20,10 +21,15 @@ type AnalysisResponse = {
 
 export function StoryCompletionGame() {
   const [step, setStep] = useState(1);
-  const [storyPrompt] = useState(storyPrompts[Math.floor(Math.random() * storyPrompts.length)]);
+  const [storyPrompt, setStoryPrompt] = useState('');
   const [userCompletion, setUserCompletion] = useState('');
   const [analysisResponse, setAnalysisResponse] = useState<AnalysisResponse>(null);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    // Select the prompt only on the client side to avoid hydration errors
+    setStoryPrompt(storyPrompts[Math.floor(Math.random() * storyPrompts.length)]);
+  }, []);
 
   const handleSubmit = () => {
     if (!userCompletion) return;
@@ -35,6 +41,8 @@ export function StoryCompletionGame() {
   };
 
   const resetGame = () => {
+    // Get a new random prompt for the next game
+    setStoryPrompt(storyPrompts[Math.floor(Math.random() * storyPrompts.length)]);
     setStep(1);
     setUserCompletion('');
     setAnalysisResponse(null);
@@ -55,12 +63,19 @@ export function StoryCompletionGame() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="p-4 bg-muted/50 rounded-lg border italic">
-                <p>"{storyPrompt}"</p>
+              <div className="p-4 bg-muted/50 rounded-lg border italic min-h-[6rem]">
+                {storyPrompt ? (
+                  <p>"{storyPrompt}"</p>
+                ) : (
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                  </div>
+                )}
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={() => setStep(2)}>Begin Writing</Button>
+              <Button onClick={() => setStep(2)} disabled={!storyPrompt}>Begin Writing</Button>
             </CardFooter>
           </Card>
         );
