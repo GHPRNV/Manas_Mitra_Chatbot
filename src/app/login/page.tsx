@@ -29,7 +29,7 @@ import { Loader2 } from 'lucide-react';
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('+');
   const [otp, setOtp] = useState('');
   const [phoneStep, setPhoneStep] = useState(1); // 1 for phone number, 2 for OTP
   const [confirmationResult, setConfirmationResult] =
@@ -37,18 +37,28 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
+  const recaptchaContainerRef = useRef<HTMLDivElement>(null);
+
 
   const auth = useAuth();
   const firestore = useFirestore();
   const router = useRouter();
 
   useEffect(() => {
-    if (auth && !recaptchaVerifier.current) {
-        recaptchaVerifier.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
+    if (auth && !recaptchaVerifier.current && recaptchaContainerRef.current) {
+        recaptchaVerifier.current = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
             size: 'invisible',
             callback: () => {
               // reCAPTCHA solved, allow signInWithPhoneNumber.
             },
+            'expired-callback': () => {
+              // Response expired. Ask user to solve reCAPTCHA again.
+              setError("reCAPTCHA expired. Please try again.");
+            }
+        });
+        recaptchaVerifier.current.render().catch((err) => {
+            console.error("RecaptchaVerifier render error:", err);
+            setError("Could not initialize reCAPTCHA. Please refresh the page.");
         });
     }
   }, [auth]);
@@ -136,13 +146,17 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-    if (!auth || !recaptchaVerifier.current) return;
+    if (!auth || !recaptchaVerifier.current) {
+        setError("Authentication service not ready. Please wait a moment and try again.");
+        setIsLoading(false);
+        return;
+    }
 
     try {
       const appVerifier = recaptchaVerifier.current;
       const confirmation = await signInWithPhoneNumber(
         auth,
-        `+${phoneNumber}`,
+        phoneNumber,
         appVerifier
       );
 
@@ -150,10 +164,27 @@ export default function LoginPage() {
       setPhoneStep(2);
       setError(null);
     } catch (err: any) {
-      console.error(err);
-      setError(
-        err.message || 'Failed to send OTP. Please check the phone number.'
-      );
+      console.error("OTP Send Error:", err);
+      // Provide more specific error messages to the user
+      switch (err.code) {
+        case 'auth/missing-phone-number':
+          setError('Please enter a phone number.');
+          break;
+        case 'auth/invalid-phone-number':
+          setError('The phone number is not valid. Please include the country code (e.g., +1).');
+          break;
+        case 'auth/too-many-requests':
+          setError('You have requested too many OTPs. Please try again later.');
+          break;
+        case 'auth/operation-not-allowed':
+           setError('Phone number sign-in is not enabled for this app. Please contact support.');
+           break;
+        case 'auth/billing-not-enabled':
+           setError('Phone number sign-in requires a billing account. Please contact support.');
+           break;
+        default:
+          setError(err.message || 'Failed to send OTP. Please check the phone number and try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -291,7 +322,7 @@ export default function LoginPage() {
                                     id="phone"
                                     name="phone"
                                     type="tel"
-                                    placeholder="e.g., 11234567890"
+                                    placeholder="+11234567890"
                                     required
                                     value={phoneNumber}
                                     onChange={(e) => setPhoneNumber(e.target.value)}
@@ -366,7 +397,7 @@ export default function LoginPage() {
             Google
           </Button>
 
-          <div id="recaptcha-container" className="my-4"></div>
+          <div id="recaptcha-container" ref={recaptchaContainerRef} className="my-4"></div>
 
           {error && (
             <p className="text-destructive text-sm text-center mt-4">{error}</p>
