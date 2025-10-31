@@ -22,26 +22,28 @@ export default function VoiceAgentPage() {
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
-      recognition.current = new SpeechRecognition();
-      recognition.current.continuous = false;
-      recognition.current.interimResults = false;
-      recognition.current.lang = 'en-US';
+      const recognitionInstance = new SpeechRecognition();
+      recognitionInstance.continuous = false;
+      recognitionInstance.interimResults = false;
+      recognitionInstance.lang = 'en-US';
 
-      recognition.current.onresult = (event: any) => {
+      recognitionInstance.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
         handleNewMessage(transcript, 'user');
       };
 
-      recognition.current.onerror = (event: any) => {
+      recognitionInstance.onerror = (event: any) => {
         if (event.error !== 'no-speech') {
           console.error('Speech recognition error:', event.error);
         }
         setIsRecording(false);
       };
 
-      recognition.current.onend = () => {
+      recognitionInstance.onend = () => {
         setIsRecording(false);
       };
+      
+      recognition.current = recognitionInstance;
     } else {
       console.warn('Speech Recognition not supported in this browser.');
     }
