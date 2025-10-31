@@ -44,6 +44,12 @@ export default function ProfilePage() {
   
   const recaptchaVerifier = useRef<RecaptchaVerifier | null>(null);
   const recaptchaContainerRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [isUserLoading, user, router]);
 
   useEffect(() => {
     if (user) {
@@ -65,17 +71,12 @@ export default function ProfilePage() {
     }
   }, [auth]);
 
-  if (isUserLoading) {
+  if (isUserLoading || !user) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
-  }
-
-  if (!user) {
-    router.push('/login');
-    return null;
   }
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
