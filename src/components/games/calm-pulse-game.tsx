@@ -134,6 +134,7 @@ export function CalmPulseGame() {
         }[phase];
         
         return (
+          <>
           <CardContent className="flex flex-col items-center justify-center space-y-8 pt-6">
              <div className='relative w-48 h-48'>
                 <AnimatePresence>
@@ -165,6 +166,7 @@ export function CalmPulseGame() {
                 </span>
             </div>
           </CardContent>
+          </>
         );
         case 'results':
             const finalScore = Math.min(100, Math.round((score / (TOTAL_CYCLES * 60)) * 100)); // Rough percentage
