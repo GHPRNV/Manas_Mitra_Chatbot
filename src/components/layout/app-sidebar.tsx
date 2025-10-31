@@ -13,6 +13,7 @@ import {
   LogIn,
   User as UserIcon,
   Gamepad2,
+  Mic,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -44,6 +45,7 @@ const menuItems = [
   { href: '/resources', label: 'Resources', icon: BookHeart },
   { href: '/forum', label: 'Forum', icon: MessageSquare },
   { href: '/games', label: 'Games', icon: Gamepad2 },
+  { href: '/voice-agent', label: 'Voice Agent', icon: Mic },
 ];
 
 export function AppSidebar() {

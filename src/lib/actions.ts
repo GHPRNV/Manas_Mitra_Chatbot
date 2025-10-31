@@ -20,6 +20,12 @@ import {
   type AnalyzeChoicesInput,
   type AnalyzeChoicesOutput,
 } from '@/ai/flows/choice-analysis-flow';
+import {
+    voiceAgent as voiceAgentFlow,
+    textToSpeech as textToSpeechFlow,
+    type ConversationInput,
+    type TTSInput,
+} from '@/ai/flows/voice-agent-flow';
 
 
 export async function getAffirmation(input: GenerateAffirmationInput) {
@@ -80,5 +86,25 @@ export async function getChoiceAnalysis(input: AnalyzeChoicesInput): Promise<Ana
             tendency: "Reflective",
             analysis: "You took a moment to think through your choices. This shows a thoughtful and reflective approach to situations."
         };
+    }
+}
+
+export async function voiceAgent(input: ConversationInput) {
+    try {
+        const response = await voiceAgentFlow(input);
+        return response;
+    } catch (error) {
+        console.error("Error in voice agent flow:", error);
+        return { response: "I'm having a little trouble understanding. Could you please say that again?" };
+    }
+}
+
+export async function textToSpeech(input: TTSInput) {
+    try {
+        const response = await textToSpeechFlow(input);
+        return response;
+    } catch (error) {
+        console.error("Error in text-to-speech flow:", error);
+        throw new Error("Failed to generate audio.");
     }
 }
