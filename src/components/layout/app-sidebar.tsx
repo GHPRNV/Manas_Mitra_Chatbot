@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   BookHeart,
   LayoutDashboard,
@@ -9,6 +9,8 @@ import {
   MessageSquare,
   SmilePlus,
   Sparkles,
+  LogOut,
+  LogIn
 } from 'lucide-react';
 import {
   Sidebar,
@@ -22,6 +24,8 @@ import {
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useAuth, useUser } from '@/firebase';
+import { Button } from '@/components/ui/button';
 
 const menuItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -34,6 +38,16 @@ const menuItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const userAvatar = PlaceHolderImages.find((img) => img.id === 'user-avatar');
+  const { user, isUserLoading } = useUser();
+  const auth = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    if (auth) {
+        await auth.signOut();
+        router.push('/');
+    }
+  };
 
   return (
     <Sidebar>
@@ -65,19 +79,45 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
-        <div className="flex items-center gap-3 p-2">
-          <Avatar>
-            <AvatarImage
-              src={userAvatar?.imageUrl}
-              data-ai-hint={userAvatar?.imageHint}
-            />
-            <AvatarFallback>U</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col overflow-hidden">
-            <span className="text-sm font-semibold truncate">User</span>
-            <span className="text-xs text-muted-foreground truncate">user@example.com</span>
+        {isUserLoading ? (
+            <div className="flex items-center gap-3 p-2">
+                <Avatar>
+                    <AvatarFallback>U</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col overflow-hidden">
+                    <span className="text-sm font-semibold truncate">Loading...</span>
+                </div>
+            </div>
+        ) : user ? (
+          <div className="flex items-center justify-between p-2 w-full">
+            <div className="flex items-center gap-3 overflow-hidden">
+                <Avatar>
+                <AvatarImage
+                    src={user.photoURL || userAvatar?.imageUrl}
+                    data-ai-hint={userAvatar?.imageHint}
+                />
+                <AvatarFallback>{user.phoneNumber ? user.phoneNumber.slice(0, 2) : 'U'}</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col overflow-hidden">
+                <span className="text-sm font-semibold truncate">{user.phoneNumber || "Anonymous User"}</span>
+                </div>
+            </div>
+            <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout">
+              <LogOut className="h-5 w-5" />
+            </Button>
           </div>
-        </div>
+        ) : (
+            <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton asChild tooltip="Login">
+                        <Link href="/login">
+                            <LogIn/>
+                            <span>Login</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+            </SidebarMenu>
+        )}
       </SidebarFooter>
     </Sidebar>
   );
