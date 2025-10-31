@@ -34,7 +34,9 @@ export default function VoiceAgentPage() {
       };
 
       recognition.current.onerror = (event: any) => {
-        console.error('Speech recognition error:', event.error);
+        if (event.error !== 'no-speech') {
+          console.error('Speech recognition error:', event.error);
+        }
         setIsRecording(false);
       };
 
