@@ -26,6 +26,11 @@ import {
     type ConversationInput,
     type TTSInput,
 } from '@/ai/flows/voice-agent-flow';
+import {
+    chat as chatFlow,
+    type ChatInput,
+    type ChatOutput,
+} from '@/ai/flows/chat-flow';
 
 
 export async function getAffirmation(input: GenerateAffirmationInput) {
@@ -106,5 +111,15 @@ export async function textToSpeech(input: TTSInput) {
     } catch (error) {
         console.error("Error in text-to-speech flow:", error);
         throw new Error("Failed to generate audio.");
+    }
+}
+
+export async function getChatResponse(input: ChatInput): Promise<ChatOutput> {
+    try {
+        const response = await chatFlow(input);
+        return response;
+    } catch (error) {
+        console.error("Error in chat flow:", error);
+        return { response: "I'm sorry, I'm having a little trouble at the moment. Please try again in a bit." };
     }
 }

@@ -136,7 +136,6 @@ export function ChooseYourFeelingsGame() {
   const currentScenario = story.find((s) => s.id === currentScenarioId);
 
   if (!currentScenario) {
-    // This should not be reached with the new logic, but serves as a fallback.
     return <Card><CardContent>Loading story...</CardContent></Card>;
   }
 

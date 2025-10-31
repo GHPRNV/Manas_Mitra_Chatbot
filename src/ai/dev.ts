@@ -8,3 +8,4 @@ import '@/ai/flows/empathetic-response-to-daily-checkin.ts';
 import '@/ai/flows/story-analysis-flow.ts';
 import '@/ai/flows/choice-analysis-flow.ts';
 import '@/ai/flows/voice-agent-flow.ts';
+import '@/ai/flows/chat-flow.ts';

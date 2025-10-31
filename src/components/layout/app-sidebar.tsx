@@ -14,6 +14,7 @@ import {
   User as UserIcon,
   Gamepad2,
   Mic,
+  Bot,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -46,6 +47,7 @@ const menuItems = [
   { href: '/forum', label: 'Forum', icon: MessageSquare },
   { href: '/games', label: 'Games', icon: Gamepad2 },
   { href: '/voice-agent', label: 'Voice Agent', icon: Mic },
+  { href: '/chat', label: 'Chat Bot', icon: Bot },
 ];
 
 export function AppSidebar() {
