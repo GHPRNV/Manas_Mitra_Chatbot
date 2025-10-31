@@ -25,3 +25,8 @@ export type Post = {
   comments: number;
   timestamp: string;
 };
+
+export type Choice = {
+  scenario: string;
+  choice: string;
+};

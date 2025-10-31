@@ -13,8 +13,8 @@ export function AffirmationCard() {
 
     const fetchAffirmation = () => {
         startTransition(async () => {
-            const newAffirmation = await getAffirmation({});
-            setAffirmation(newAffirmation);
+            const result = await getAffirmation({});
+            setAffirmation(result);
         });
     };
 
