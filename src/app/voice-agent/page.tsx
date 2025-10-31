@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription }
 import { Button } from '@/components/ui/button';
 import { Mic, MicOff, Loader2, Volume2, User, Bot } from 'lucide-react';
 import { voiceAgent, textToSpeech } from '@/lib/actions';
+import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   role: 'user' | 'model';
@@ -18,6 +19,7 @@ export default function VoiceAgentPage() {
   const [interimTranscript, setInterimTranscript] = useState('');
   const recognition = useRef<any>(null); // Using 'any' for SpeechRecognition for broader compatibility
   const audioPlayer = useRef<HTMLAudioElement | null>(null);
+  const { toast } = useToast();
 
   // Initialize SpeechRecognition
   useEffect(() => {
@@ -48,6 +50,11 @@ export default function VoiceAgentPage() {
       recognitionInstance.onerror = (event: any) => {
         if (event.error !== 'no-speech' && event.error !== 'aborted') {
           console.error('Speech recognition error:', event.error);
+           toast({
+            variant: 'destructive',
+            title: 'Speech Recognition Error',
+            description: `There was a problem with the speech service (${event.error}). Please check your connection and try again.`,
+          });
         }
         setIsRecording(false);
         setInterimTranscript('');
@@ -64,7 +71,7 @@ export default function VoiceAgentPage() {
 
     // Create a hidden audio element for playback
     audioPlayer.current = new Audio();
-  }, []);
+  }, [toast]);
 
   const handleNewMessage = async (text: string, role: 'user' | 'model') => {
     if (!text.trim()) return;
@@ -78,7 +85,7 @@ export default function VoiceAgentPage() {
       try {
         // Get AI text response
         const aiResult = await voiceAgent({
-          history: newConversation, // Use the updated conversation history
+          history: newConversation,
           currentInput: text,
         });
 
@@ -105,7 +112,11 @@ export default function VoiceAgentPage() {
 
   const toggleRecording = async () => {
     if (!recognition.current) {
-      alert("Sorry, your browser doesn't support voice commands.");
+      toast({
+        variant: 'destructive',
+        title: 'Unsupported Browser',
+        description: "Sorry, your browser doesn't support the voice agent.",
+      });
       return;
     }
 
@@ -119,7 +130,11 @@ export default function VoiceAgentPage() {
         setIsRecording(true);
       } catch (err) {
         console.error("Microphone access denied:", err);
-        alert("Microphone access is required to use the voice agent. Please enable it in your browser settings.");
+        toast({
+            variant: 'destructive',
+            title: 'Microphone Access Denied',
+            description: 'Microphone access is required. Please enable it in your browser settings.',
+        });
       }
     }
   };
