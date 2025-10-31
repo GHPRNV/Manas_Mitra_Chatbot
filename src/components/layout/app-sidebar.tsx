@@ -12,6 +12,7 @@ import {
   LogOut,
   LogIn,
   User as UserIcon,
+  Gamepad2,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -42,6 +43,7 @@ const menuItems = [
   { href: '/progress', label: 'My Progress', icon: LineChart },
   { href: '/resources', label: 'Resources', icon: BookHeart },
   { href: '/forum', label: 'Forum', icon: MessageSquare },
+  { href: '/games', label: 'Games', icon: Gamepad2 },
 ];
 
 export function AppSidebar() {

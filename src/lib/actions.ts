@@ -11,6 +11,11 @@ import {
 import {
   contextualResourceRecommendation
 } from '@/ai/flows/contextual-resource-recommendation';
+import { 
+  analyzeStory,
+  type AnalyzeStoryInput 
+} from '@/ai/flows/story-analysis-flow';
+
 
 export async function getAffirmation(input: GenerateAffirmationInput) {
   try {
@@ -43,6 +48,19 @@ export async function getCheckInResponse(
     return {
       response: "Thank you for sharing. It takes courage to acknowledge your feelings. Remember to be kind to yourself.",
       recommendation: "Consider trying a simple breathing exercise to help center yourself. You can find some in our Resources section."
+    };
+  }
+}
+
+export async function getStoryAnalysis(input: AnalyzeStoryInput) {
+  try {
+    const analysis = await analyzeStory(input);
+    return analysis;
+  } catch (error) {
+    console.error("Failed to get story analysis:", error);
+    return {
+      analysis: "Thank you for sharing your story. It's a wonderful act of creativity to bring a new world to life with your words.",
+      identifiedFeeling: "Creative"
     };
   }
 }
