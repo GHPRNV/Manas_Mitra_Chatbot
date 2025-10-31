@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Sparkles, Lightbulb } from 'lucide-react';
-import { analyzeStory } from '@/lib/actions';
+import { getStoryAnalysis } from '@/lib/actions';
 
 const storyPrompts = [
   "The small boat drifted on a sea of stars. In the distance, a single lighthouse blinked. As the boat got closer, the light wasn't from a lamp, but from...",
@@ -29,7 +29,7 @@ export function StoryCompletionGame() {
     if (!userCompletion) return;
     setStep(3); // Move to the analysis step
     startTransition(async () => {
-      const response = await analyzeStory({ storyPrompt, userCompletion });
+      const response = await getStoryAnalysis({ storyPrompt, userCompletion });
       setAnalysisResponse(response);
     });
   };
